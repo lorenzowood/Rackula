@@ -100,6 +100,10 @@
     type SaveStatus as SaveStatusType,
     PersistenceError,
   } from "$lib/utils/persistence-api";
+  import {
+    createEmbedBridge,
+    type RackulaEmbedBridgeController,
+  } from "$lib/utils/embed-bridge";
 
   // Sidebar size configuration (in pixels)
   interface Props {
@@ -127,6 +131,7 @@
   // Diagnostic: tracks current layout UUID (assigned but not actively read - for debugging)
   let _currentLayoutId = $state<string | undefined>(undefined);
   let saveStatus = $state<SaveStatusType>("idle");
+  let embedBridge = $state<RackulaEmbedBridgeController | null>(null);
 
   // Dialog state - now managed by dialogStore
   // Legacy local aliases for gradual migration
@@ -246,6 +251,34 @@
       partyModeTimeout = null;
     }, 10_000);
   }
+
+  onMount(() => {
+    embedBridge = createEmbedBridge({
+      getLayout: () => layoutStore.layout,
+      applyLayout: (layout) => {
+        showStartScreen = false;
+        layoutStore.loadLayout(layout);
+        layoutStore.markClean();
+
+        requestAnimationFrame(() => {
+          canvasStore.fitAll(layoutStore.racks, layoutStore.rack_groups);
+        });
+      },
+      onError: (error) => {
+        persistenceDebug.api(
+          "embed bridge error code=%s message=%s details=%O",
+          error.code,
+          error.message,
+          error.details,
+        );
+      },
+    });
+
+    return () => {
+      embedBridge?.dispose();
+      embedBridge = null;
+    };
+  });
 
   // Auto-open new rack dialog when no racks exist (first-load experience)
   // Also handles loading shared layouts from URL params
@@ -1328,6 +1361,18 @@
         saveDebounceTimer = null;
       }
     };
+  });
+
+  // Emit layout updates to embedding host (iframe bridge)
+  $effect(() => {
+    const bridge = embedBridge;
+    const layoutSnapshot = structuredClone($state.snapshot(layoutStore.layout));
+
+    if (!bridge) {
+      return;
+    }
+
+    bridge.notifyLayoutChanged(layoutSnapshot);
   });
 
   // Auto-save to server when API is available
