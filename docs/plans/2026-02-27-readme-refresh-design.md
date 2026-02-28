@@ -46,30 +46,30 @@ Tim Robinson / Mitch Hedberg energy: deadpan, observational, dry. Professional s
 | 600+ real devices       | NetBox devicetype-library powered -- Dell, HP, Ubiquiti, and more   |
 | Totally offline         | No cloud, no telemetry, no accounts. It's just files.               |
 
-7. **See It In Action** (screenshot placeholders, captured during this PR)
+1. **See It In Action** (screenshot placeholders, captured during this PR)
    - Multi-rack layout
    - Device library
    - Export options
    - QR sharing
 
-8. **Who It's For**
+1. **Who It's For**
    - Homelabbers: plan before you buy, rearrange without lifting anything
    - Sysadmins & IT teams: document what's in the rack so the next person doesn't have to guess
    - AV techs & touring crews: map out bayed racks for studios and road cases
    - IT students: learn rack planning without a rack (or a budget)
    - Anyone with a rack: honestly, if you put things in a rack, this is for you
 
-9. **Quick Start**
+1. **Quick Start**
    - Use it now: count.racku.la
    - Self-host: link to Self-Hosting Guide
    - Build from source: clone + npm install + npm run build
 
-10. **Documentation** (Architecture, Spec, Contributing links)
-11. **Contributing** (link to CONTRIBUTING.md, good first issue link)
-12. **Built With Claude** (existing paragraph, unchanged)
-13. **Acknowledgements** (one-liner linking to ACKNOWLEDGEMENTS.md)
-14. **Star History** (unchanged)
-15. **Licence** (unchanged)
+1. **Documentation** (Architecture, Spec, Contributing links)
+1. **Contributing** (link to CONTRIBUTING.md, good first issue link)
+1. **Built With Claude** (existing paragraph, unchanged)
+1. **Acknowledgements** (one-liner linking to ACKNOWLEDGEMENTS.md)
+1. **Star History** (unchanged)
+1. **Licence** (unchanged)
 
 ## Devil's Advocate Review (2 rounds)
 

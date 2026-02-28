@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Add light-mode logo to header
+## Task 1: Add light-mode logo to header
 
 The current README only shows the dark-mode logo. The light-mode variant exists at `assets/Rackula-lockup-light.svg` but isn't used.
 
@@ -51,7 +51,7 @@ git commit -m "docs: add light-mode logo and fix production URL (#1353)"
 
 ---
 
-### Task 2: Replace tagline, subtitle, and hero section
+## Task 2: Replace tagline, subtitle, and hero section
 
 **Files:**
 
@@ -88,7 +88,7 @@ git commit -m "docs: update tagline and add try-it-now line (#1353)"
 
 ---
 
-### Task 3: Replace body sections (Features through Licence)
+## Task 3: Replace body sections (Features through Licence)
 
 This is the main rewrite. Replace everything from `## What _Is_ This` through the end of the file.
 
@@ -161,8 +161,6 @@ cd Rackula && npm install && npm run build
 ```
 ````
 
-````
-
 **Documentation:**
 
 ```markdown
@@ -171,7 +169,7 @@ cd Rackula && npm install && npm run build
 - [Architecture Overview](docs/reference/ARCHITECTURE.md)
 - [Technical Specification](docs/reference/SPEC.md)
 - [Self-Hosting Guide](docs/guides/SELF-HOSTING.md)
-````
+```
 
 **Contributing:**
 
@@ -230,7 +228,7 @@ git commit -m "docs: rewrite README with feature-forward structure (#1353)"
 
 ---
 
-### Task 4: Create screenshots directory with placeholder files
+## Task 4: Create screenshots directory with placeholder files
 
 **Files:**
 
@@ -252,7 +250,7 @@ git commit -m "docs: add screenshots directory for README gallery (#1353)"
 
 ---
 
-### Task 5: Capture screenshots and add to gallery
+## Task 5: Capture screenshots and add to gallery
 
 This task is manual — requires running the app and taking screenshots.
 
@@ -283,7 +281,7 @@ git commit -m "docs: add README gallery screenshots (#1353)"
 
 ---
 
-### Task 6: Final review and PR
+## Task 6: Final review and PR
 
 **Step 1: Review the full README**
 
