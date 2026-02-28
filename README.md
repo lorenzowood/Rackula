@@ -21,131 +21,65 @@
 </p>
 
 <p align="center">
-  <strong>Drag and drop rack visualizer</strong>
+  <strong>Open-source drag-and-drop rack layout designer.</strong><br>
+  <em>Plan your racks before you wreck your back.</em>
 </p>
 
 <p align="center">
   <img src="assets/Rackula-hero-drac.gif" alt="Rackula demo" width="500">
 </p>
 
+<p align="center">
+  <a href="https://count.racku.la"><strong>count.racku.la</strong></a> — no signup, runs in your browser. Self-host it if you want, we're not your dad.
+</p>
+
 ---
 
-## What _Is_ This
+## Features
 
-Plan your rack layout. Drag your devices in, move them around, export it. It runs in your browser. You can close the tab whenever you want.
+| Feature                     | Description                                                         |
+| --------------------------- | ------------------------------------------------------------------- |
+| **Drag & drop**             | Toss devices into your rack. Move them around. Frown at the result. |
+| **Real device images**      | Looks like your actual gear, not sad grey boxes                     |
+| **Multi-rack layouts**      | Because one rack is never enough                                    |
+| **Server & AV racks**       | Standard 19" and bayed racks — homelabs, studios, touring rigs      |
+| **Export to PNG, PDF, SVG** | For your documentation, your wall, or your therapist                |
+| **QR code sharing**         | Your layout lives in a URL — scan it and it just shows up           |
+| **600+ real devices**       | NetBox devicetype-library powered — Dell, HP, Ubiquiti, and more    |
+| **Totally offline**         | No cloud, no telemetry, no accounts. It's just files.               |
 
-## What It _Do_
+## Who It's For
 
-- **Drag and drop devices** into your rack so you can frown at them
-- **Real device images** so it actually looks like your gear, not sad grey boxes
-- **Export to PNG, PDF, SVG** for your documentation or for printing and staring at
-- **QR code sharing** - your layout lives in a URL, scan it and it just shows up
+- **Homelabbers:** plan before you buy, rearrange without lifting anything
+- **Sysadmins & IT teams:** document what's in the rack so the next person doesn't have to guess
+- **AV techs & touring crews:** map out bayed racks for studios and road cases
+- **IT students:** learn rack planning without a rack (or a budget)
+- **Anyone with a rack:** honestly, if you put things in a rack, this is for you
 
-## But _Why?_
+## Quick Start
 
-You might ask, why should I make an imaginary rack like some sort of IT cosplay? And to that I would say, "fine then! don't! SCRAM!" but also, consider:
+**Use it now:** [count.racku.la](https://count.racku.la)
 
-- **Plan your layouts** before you build them. It's a lot easier to move your mouse than that 4U server full of hard drives. Your shoulder will thank you.
-- **Document existing layouts** so you know what is where.
-- **Because you can**
+**Self-host it:** See the [Self-Hosting Guide](docs/guides/SELF-HOSTING.md) for Docker, Compose, persistent storage, and auth setup.
 
-## Get Started
-
-### **Use it right now:** [count.racku.la](https://count.racku.la)
-
-### Selfhost with Docker
-
-#### Docker Run
-
-```bash
-docker run -d -p 8080:8080 ghcr.io/rackulalives/rackula:latest
-```
-
-#### Docker Compose
-
-```bash
-curl -O https://raw.githubusercontent.com/rackulalives/rackula/main/docker-compose.yml
-docker compose up -d
-```
-
-Then open `http://localhost:8080` and get after it.
-
-### Persistent Storage (Self-Hosted)
-
-For layouts that persist across sessions:
-
-```bash
-git clone https://github.com/RackulaLives/Rackula.git
-cd Rackula
-curl -fsSL https://raw.githubusercontent.com/RackulaLives/Rackula/main/deploy/docker-compose.persist.yml -o docker-compose.yml
-mkdir -p data
-sudo chown 1001:1001 data
-docker compose up -d
-```
-
-See [Self-Hosting Guide](docs/guides/SELF-HOSTING.md) for details.
-
-For production/self-hosted API security:
-
-- `CORS_ORIGIN` should be your real app URL (restricts which browser origins can call the API).
-- `RACKULA_API_WRITE_TOKEN` protects API `PUT`/`DELETE` routes (optional, strongly recommended). If unset, write routes remain open.
-- `RACKULA_AUTH_MODE` controls centralized auth gate behavior:
-  - `none`: auth gate disabled (best for local/trusted development only)
-  - `oidc`: use an OpenID Connect provider (requires provider config plus `RACKULA_AUTH_SESSION_SECRET`)
-  - `local`: local auth mode (requires `RACKULA_AUTH_SESSION_SECRET`; tracking: [#1117](https://github.com/RackulaLives/Rackula/issues/1117))
-- `RACKULA_AUTH_SESSION_SECRET` is required when auth mode is enabled (minimum 32 characters). Use a random secret and rotate it when needed.
-- Current stable auth hardening: deny-by-default gate, signed session cookies, timeout/rotation policy, CSRF enforcement.
-- Current auth flow maturity: OIDC/local login provider wiring is still in progress.
-- For HTTPS deployments, set `RACKULA_AUTH_SESSION_COOKIE_SECURE=true` (compose templates default to this). Only set `false` for local HTTP testing.
-- Session hardening defaults are enabled when auth is on:
-  - `HttpOnly` cookie, `SameSite=Lax`, `Secure` in production
-  - bounded absolute + idle session lifetime
-  - CSRF checks on state-changing cookie-authenticated requests
-
-Generate strong secrets:
-
-```bash
-openssl rand -hex 32
-```
-
-Set values in a `.env` file beside `docker-compose.yml`:
-
-```bash
-cat > .env <<'EOF'
-CORS_ORIGIN=https://rack.example.com
-RACKULA_API_WRITE_TOKEN=replace-with-generated-token
-RACKULA_AUTH_MODE=none
-# To enable auth gate:
-# RACKULA_AUTH_MODE=oidc
-# RACKULA_AUTH_MODE=local
-# RACKULA_AUTH_SESSION_SECRET=replace-with-generated-secret
-# RACKULA_AUTH_SESSION_COOKIE_SECURE=true
-EOF
-docker compose up -d
-```
-
-Or pass them inline:
-
-```bash
-CORS_ORIGIN=https://rack.example.com \
-RACKULA_API_WRITE_TOKEN=replace-with-generated-token \
-docker compose up -d
-```
-
-### Build from source
+**Build from source:**
 
 ```bash
 git clone https://github.com/RackulaLives/Rackula.git
 cd Rackula && npm install && npm run build
 ```
 
-Serve the `dist/` folder however you like. It's just files.
-
 ## Documentation
 
 - [Architecture Overview](docs/ARCHITECTURE.md)
-- [Technical Overview](docs/reference/SPEC.md)
-- [Contributing Guide](CONTRIBUTING.md)
+- [Technical Specification](docs/reference/SPEC.md)
+- [Self-Hosting Guide](docs/guides/SELF-HOSTING.md)
+
+## Contributing
+
+Rackula is open source and contributions are welcome. Check out the [Contributing Guide](CONTRIBUTING.md) to get started.
+
+Not sure where to start? Look for issues labelled [`good first issue`](https://github.com/RackulaLives/Rackula/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
 ## Built With Claude
 
@@ -153,9 +87,7 @@ This project was built using AI-assisted development with Claude. I told it what
 
 ## Acknowledgements
 
-Built for the [r/homelab](https://reddit.com/r/homelab) and [r/selfhosted](https://reddit.com/r/selfhosted) communities. Colours from [Dracula Theme](https://draculatheme.com/). Device data from [NetBox devicetype-library](https://github.com/netbox-community/devicetype-library).
-
-See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for full credits.
+Built on [Dracula Theme](https://draculatheme.com/) colours, [NetBox devicetype-library](https://github.com/netbox-community/devicetype-library) device data, and a lot of open source. See [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) for full credits.
 
 ## Star History
 
