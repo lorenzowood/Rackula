@@ -15,12 +15,6 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRackulaLives%2FRackula%2Freport%2Fbadges%2Fdocs%2Fbadges%2Fcoverage.json&style=for-the-badge&labelColor=44475a" alt="Coverage">
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRackulaLives%2FRackula%2Freport%2Fbadges%2Fdocs%2Fbadges%2Fratio.json&style=for-the-badge&labelColor=44475a" alt="Code to Test Ratio">
-  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRackulaLives%2FRackula%2Freport%2Fbadges%2Fdocs%2Fbadges%2Ftime.json&style=for-the-badge&labelColor=44475a" alt="Test Time">
-</p>
-
-<p align="center">
   <strong>Open-source drag-and-drop rack layout designer.</strong><br>
   <em>Plan your racks before you wreck your back.</em>
 </p>
@@ -34,6 +28,8 @@
 </p>
 
 ---
+
+Plan your rack layout. Drag your devices in, move them around, export it. It runs in your browser — no accounts, no cloud, no nonsense. You can close the tab whenever you want.
 
 ## Features
 
@@ -69,6 +65,8 @@ git clone https://github.com/RackulaLives/Rackula.git
 cd Rackula && npm install && npm run build
 ```
 
+Serve the `dist/` folder however you like. It's just files.
+
 ## Documentation
 
 - [Architecture Overview](docs/ARCHITECTURE.md)
@@ -80,6 +78,12 @@ cd Rackula && npm install && npm run build
 Rackula is open source and contributions are welcome. Check out the [Contributing Guide](CONTRIBUTING.md) to get started.
 
 Not sure where to start? Look for issues labelled [`good first issue`](https://github.com/RackulaLives/Rackula/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
+<p align="center">
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRackulaLives%2FRackula%2Freport%2Fbadges%2Fdocs%2Fbadges%2Fcoverage.json&style=for-the-badge&labelColor=44475a" alt="Coverage">
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRackulaLives%2FRackula%2Freport%2Fbadges%2Fdocs%2Fbadges%2Fratio.json&style=for-the-badge&labelColor=44475a" alt="Code to Test Ratio">
+  <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FRackulaLives%2FRackula%2Freport%2Fbadges%2Fdocs%2Fbadges%2Ftime.json&style=for-the-badge&labelColor=44475a" alt="Test Time">
+</p>
 
 ## Built With Claude
 
