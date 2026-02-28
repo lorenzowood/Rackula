@@ -76,7 +76,7 @@ RACKULA_LOCAL_PASSWORD=<plaintext>        # required, min 12 chars
 
 **Parameters (OWASP 2023):**
 
-```text
+```
 type: argon2id
 memoryCost: 65536    (64 MiB)
 timeCost: 3          (iterations)
@@ -140,9 +140,9 @@ Plus `Set-Cookie: rackula_auth_session=<signed-token>; Path=/; HttpOnly; Secure;
 
 ### Credential Verification Flow
 
-```text
+```
 1. Rate limit check (per-IP sliding window)
-2. Timing-safe username comparison (padded buffers + timingSafeEqual)
+2. Timing-safe username comparison (SHA-256 hash equality, not string compare)
 3. Argon2id password verification
 4. Both must pass -> create session
 5. Either fails -> 401 (generic message, no leak of which failed)
@@ -281,9 +281,8 @@ The logout handler in `app.ts` validates the session cookie, invalidates the SID
 
 1. Set `RACKULA_LOCAL_USERNAME` and `RACKULA_LOCAL_PASSWORD`
 2. Change `RACKULA_AUTH_MODE=oidc` -> `local`
-3. **Recommended:** Rotate `RACKULA_AUTH_SESSION_SECRET` to invalidate all existing OIDC sessions — prevents subject mismatches (`user@example.com` vs `admin`) that could break authorisation checks and audit trails
-4. Restart container
-5. If session secret was not rotated, existing OIDC sessions may continue working (same signature key) but with a mismatched subject claim
+3. Restart container
+4. OIDC sessions may continue working (same session secret validates the signature) but subject will differ (`user@example.com` vs `admin`)
 
 ### Documentation
 
@@ -303,7 +302,7 @@ The auth logger (`auth-logger.ts`) already redacts `authorization`, `cookie`, `s
 
 ### Timing Attack Prevention
 
-- **Username:** Compare via `timingSafeEqual` on padded equal-length buffers (constant-time regardless of input length)
+- **Username:** Compare via `timingSafeEqual` on SHA-256 digests (constant-time regardless of length)
 - **Password:** Argon2 verification is timing-safe by design
 - **Combined response:** Generic "Invalid username or password" regardless of which failed
 
@@ -367,7 +366,6 @@ Existing: `RACKULA_AUTH_SESSION_COOKIE_SECURE=true` enforces HTTPS in production
 | `vite.config.ts`                      | Add `login.html` as additional entry point                                     |
 | `.env.example`                        | Add `RACKULA_LOCAL_*` variables                                                |
 | `deploy/docker-compose.persist.yml`   | Add local auth env vars                                                        |
-| `docs/deployment/AUTHENTICATION.md`   | Add local auth setup guide, migration steps between modes                      |
 
 ---
 
@@ -375,7 +373,6 @@ Existing: `RACKULA_AUTH_SESSION_COOKIE_SECURE=true` enforces HTTPS in production
 
 ### Unit Tests
 
-- Credential bootstrap fail-fast: missing `RACKULA_LOCAL_USERNAME` throws, missing `RACKULA_LOCAL_PASSWORD` throws, password < 12 chars throws, valid credentials succeed
 - Argon2id hash/verify round-trip
 - Rate limiter: 5 failures trigger lockout, lockout expires, success resets counter, separate IPs tracked independently
 - Login endpoint: valid creds -> 200 + cookie, invalid -> 401, missing fields -> 400, rate limited -> 429
