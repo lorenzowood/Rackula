@@ -40,7 +40,7 @@ playwright-browserstack-sdk.config.ts
 .claude/plans/
 .planning/
 docs/planning/
-docs/plans/
+docs/plans/**/*.draft.md
 
 # Git worktrees
 .worktree/
