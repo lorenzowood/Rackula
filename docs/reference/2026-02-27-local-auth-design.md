@@ -175,7 +175,7 @@ Same cookie format, same validation path. Auth gate sees no difference between l
 | Storage      | In-memory Map                              | Resets on restart (acceptable for homelab)   |
 | Cleanup      | Every 5 minutes, prune entries > 2 min old | Prevent memory bloat                         |
 
-**IP extraction:** `x-real-ip` header (set by nginx) — same source as auth logger.
+**IP extraction:** `x-real-ip` header (set by nginx) — same source as auth logger. Nginx is the trusted reverse proxy in all deployment configurations; `x-real-ip` is only read behind nginx, never trusted from direct client connections.
 
 **Why not account lockout:** Single admin + rate limiting is sufficient. Account lockout creates denial-of-service risk (attacker locks out the only admin). Rate limiting bounds the attack surface without blocking legitimate access.
 
