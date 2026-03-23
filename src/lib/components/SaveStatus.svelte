@@ -156,6 +156,14 @@
     margin-left: var(--space-1);
   }
 
+  .retry-link:hover,
+  .retry-link:focus-visible {
+    color: var(--colour-text);
+    outline: 2px solid var(--colour-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
   :global(.icon-success) {
     color: var(--colour-success);
   }
