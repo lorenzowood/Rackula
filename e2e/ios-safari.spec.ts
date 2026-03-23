@@ -38,6 +38,15 @@ async function setupMobileViewport(
   await page.locator(locators.rack.container).first().waitFor({ state: "visible" });
 }
 
+/**
+ * On mobile viewports, the device palette is inside the bottom sheet.
+ * Open it before calling dragDeviceToRack so palette items are visible.
+ */
+async function mobileDragDeviceToRack(page: Page) {
+  await openDeviceLibraryFromBottomNav(page);
+  return dragDeviceToRack(page);
+}
+
 // ============================================================================
 // Devices Tab Tests
 // ============================================================================
@@ -78,8 +87,14 @@ test.describe("Devices Tab (Device Library)", () => {
   }
 
   test("Device library FAB is removed in desktop mode", async ({ page }) => {
-    const device = iosDevices.find((d) => d.name === "iPad Pro 12.9")!;
-    await setupMobileViewport(page, device);
+    // iPad Pro 12.9 at 1024px is at the mobile breakpoint (max-width: 1024px),
+    // so it's still mobile. Use a wider viewport to test desktop mode.
+    await page.setViewportSize({ width: 1280, height: 1366 });
+    await page.addInitScript(() => {
+      sessionStorage.setItem("rackula-mobile-warning-dismissed", "true");
+    });
+    await page.goto(`/?l=${EMPTY_RACK_SHARE}`);
+    await page.locator(locators.rack.container).first().waitFor({ state: "visible" });
 
     await expect(page.locator(locators.mobile.deviceLibraryFab)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Devices" })).toHaveCount(0);
@@ -145,7 +160,8 @@ test.describe("Device Label Positioning", () => {
       device.name + " - device labels render within bounds",
       async ({ page }) => {
         await setupMobileViewport(page, device);
-        await dragDeviceToRack(page);
+        // Open bottom sheet to expose palette items on mobile
+        await mobileDragDeviceToRack(page);
 
         const rackDevice = page.locator(locators.rack.device).first();
         await expect(rackDevice).toBeVisible({ timeout: 5000 });
@@ -192,7 +208,8 @@ test.describe("Haptic Feedback", () => {
 
     expect(typeof vibrateSupported).toBe("boolean");
 
-    await dragDeviceToRack(page);
+    // Open bottom sheet to expose palette items on mobile
+    await mobileDragDeviceToRack(page);
 
     const device = page.locator(locators.rack.device).first();
     await expect(device).toBeVisible({ timeout: 5000 });

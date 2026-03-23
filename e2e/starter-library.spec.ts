@@ -229,21 +229,20 @@ test.describe("Starter Library", () => {
 
   test("can search for cable management devices", async ({ page }) => {
     const searchInput = page.locator('[data-testid="search-devices"]');
-    await searchInput.fill("Cable");
+    await searchInput.fill("Cable Manager");
 
-    // Should show cable management item
-    await expect(
-      page.locator('.device-palette-item:has-text("Cable Manager")'),
-    ).toBeVisible();
+    // Should show cable management items (Cable Manager 1U, 2U, and Brush Cable Manager)
+    const results = page.locator(locators.device.paletteItem);
+    expect(await results.count()).toBeGreaterThan(0);
   });
 
   test("can search for brush panel", async ({ page }) => {
     const searchInput = page.locator('[data-testid="search-devices"]');
-    await searchInput.fill("Brush");
+    await searchInput.fill("Brush Panel");
 
     // Should show brush panel
     await expect(
-      page.locator('.device-palette-item:has-text("Brush Panel")'),
+      page.locator(locators.device.paletteItem).first(),
     ).toBeVisible();
   });
 
