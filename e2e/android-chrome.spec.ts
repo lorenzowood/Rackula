@@ -431,8 +431,8 @@ test.describe("WebView Compatibility", () => {
 
     // Reload and verify no critical errors
     await page.reload();
-    // Wait for the page to settle — rack may or may not restore from session
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState("networkidle");
+    await page.locator(locators.rack.container).first().waitFor({ state: "visible", timeout: 5000 });
 
     const criticalErrors = errors.filter(
       (e) => !e.includes("warning") && !e.includes("deprecated"),

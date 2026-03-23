@@ -11,6 +11,7 @@ import { locators } from "./locators";
  * @param page - Playwright page
  * @param options.yOffsetPercent - Vertical position in rack (0-100), default 10
  * @param options.deviceIndex - Which palette device to drag (default 0 = first)
+ * @param options.rackIndex - Zero-based index of the target rack in multi-rack layouts (default 0)
  * @returns Number of devices in rack after drag
  */
 export async function dragDeviceToRack(
@@ -31,10 +32,15 @@ export async function dragDeviceToRack(
       const deviceItem = deviceItems[deviceIndex];
       // Use front-view SVGs so rackIndex maps directly to rack number
       const rackSvgs = document.querySelectorAll(".rack-front .rack-svg");
-      const rack = rackSvgs[rackIndex] ?? document.querySelector(".rack-svg");
+      const rack = rackSvgs[rackIndex];
+      if (!rack) {
+        throw new Error(
+          `Rack at index ${rackIndex} not found (${rackSvgs.length} rack(s) available)`,
+        );
+      }
 
-      if (!deviceItem || !rack) {
-        throw new Error("Could not find device item or rack");
+      if (!deviceItem) {
+        throw new Error(`Device item at index ${deviceIndex} not found`);
       }
 
       const rackRect = rack.getBoundingClientRect();

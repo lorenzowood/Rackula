@@ -222,16 +222,21 @@ test.describe("Starter Library", () => {
     await searchInput.fill("Switch");
 
     // Should show switch items (KVM Switch, 24-Port Switch, 48-Port Switch)
-    expect(
-      await page.locator('.device-palette-item:has-text("Switch")').count(),
-    ).toBeGreaterThan(0);
+    const results = page.locator(locators.device.paletteItem);
+    expect(await results.count()).toBeGreaterThan(0);
+
+    const names = await results.allTextContents();
+    const matchingNames = names.map((n) => n.trim()).filter((n) => /switch/i.test(n));
+    expect(matchingNames.length).toBeGreaterThan(0);
+    expect(matchingNames.some((n) => /KVM Switch/i.test(n))).toBe(true);
+    expect(matchingNames.some((n) => /24-Port/i.test(n))).toBe(true);
   });
 
   test("can search for cable management devices", async ({ page }) => {
     const searchInput = page.locator('[data-testid="search-devices"]');
     await searchInput.fill("Cable Manager");
 
-    // Should show cable management items (Cable Manager 1U, 2U, and Brush Cable Manager)
+    // Should show cable management items (Cable Manager)
     const results = page.locator(locators.device.paletteItem);
     expect(await results.count()).toBeGreaterThan(0);
   });
@@ -259,5 +264,4 @@ test.describe("Starter Library", () => {
     });
   });
 
-  // Hardcoded colour assertion removed — violates testing rules (no hardcoded color values)
 });

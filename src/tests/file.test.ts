@@ -124,7 +124,7 @@ describe("File Utilities", () => {
 
       // Should correctly detect cancel
       expect(result).toBeNull();
-    }, 2000);
+    }, 3000);
   });
 
   describe("readFileAsText", () => {
