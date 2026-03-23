@@ -17,9 +17,10 @@
 
   interface Props {
     status: SaveStatus;
+    onretry?: () => void;
   }
 
-  let { status }: Props = $props();
+  let { status, onretry }: Props = $props();
 
   // Respect user's reduced motion preference (reactive to runtime changes)
   let prefersReducedMotion = $state(false);
@@ -78,9 +79,9 @@
       {:else if status === "saved"}
         Layout saved
       {:else if status === "error"}
-        Save failed
+        Save failed{#if onretry}, retry button available{/if}
       {:else if status === "offline"}
-        Working offline
+        Working offline{#if onretry}, retry button available{/if}
       {/if}
     </span>
     {#if status === "saving"}
@@ -94,9 +95,15 @@
     {:else if status === "error"}
       <IconBug size={14} />
       <span class="status-text error">Save failed</span>
+      {#if onretry}
+        <button class="retry-link" onclick={onretry}>Retry</button>
+      {/if}
     {:else if status === "offline"}
       <IconCloudOff size={14} />
       <span class="status-text warning">Offline</span>
+      {#if onretry}
+        <button class="retry-link" onclick={onretry}>Retry</button>
+      {/if}
     {/if}
   </div>
 {/if}
@@ -136,6 +143,17 @@
 
   .status-text.warning {
     color: var(--colour-warning);
+  }
+
+  .retry-link {
+    background: none;
+    border: none;
+    color: var(--colour-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0;
+    margin-left: var(--space-1);
   }
 
   :global(.icon-success) {

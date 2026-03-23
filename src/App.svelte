@@ -66,6 +66,7 @@
     handleLoad,
     handleShare,
     handleFitAll,
+    handleSaveToServer,
   } from "$lib/utils/persistence-manager.svelte";
 
   // Sidebar size configuration (in pixels)
@@ -290,6 +291,10 @@
         setApiAvailable(false);
         if (hasEverConnectedToApi()) {
           setSaveStatus("offline");
+          toastStore.showToast(
+            "Could not load from server — using local backup",
+            "warning",
+          );
         } else {
           setSaveStatus("disabled");
         }
@@ -523,6 +528,7 @@
       promptCleanupOnSave={uiStore.promptCleanupOnSave}
       {partyMode}
       {saveStatus}
+      onsaveretry={handleSaveToServer}
       onsave={maybeSave}
       onsaveas={maybeSaveAs}
       onload={handleLoad}
