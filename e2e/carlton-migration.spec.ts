@@ -41,7 +41,7 @@ test.describe("Carlton Migration (#879)", () => {
     await loadFileFromDisk(page, fixturePath);
 
     // Wait for success toast to confirm load completed
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    await expect(page.locator(locators.toast.success).first()).toBeVisible({
       timeout: 10000,
     });
 
@@ -58,7 +58,7 @@ test.describe("Carlton Migration (#879)", () => {
     await loadFileFromDisk(page, fixturePath);
 
     // Wait for success toast
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    await expect(page.locator(locators.toast.success).first()).toBeVisible({
       timeout: 10000,
     });
 
@@ -94,7 +94,7 @@ test.describe("Carlton Migration (#879)", () => {
     await loadFileFromDisk(page, fixturePath);
 
     // Wait for success toast
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    await expect(page.locator(locators.toast.success).first()).toBeVisible({
       timeout: 10000,
     });
 
@@ -124,7 +124,7 @@ test.describe("Carlton Migration (#879)", () => {
     await loadFileFromDisk(page, savedPath);
 
     // Verify it loads successfully
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    await expect(page.locator(locators.toast.success).first()).toBeVisible({
       timeout: 10000,
     });
 

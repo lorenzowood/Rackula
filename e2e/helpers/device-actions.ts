@@ -15,20 +15,23 @@ import { locators } from "./locators";
  */
 export async function dragDeviceToRack(
   page: Page,
-  options?: { yOffsetPercent?: number; deviceIndex?: number },
+  options?: { yOffsetPercent?: number; deviceIndex?: number; rackIndex?: number },
 ): Promise<number> {
   const yPercent = options?.yOffsetPercent ?? 10;
   const deviceIndex = options?.deviceIndex ?? 0;
+  const rackIndex = options?.rackIndex ?? 0;
 
   await expect(page.locator(locators.device.paletteItem).first()).toBeVisible();
 
   const deviceCountBefore = await page.locator(locators.rack.device).count();
 
   await page.evaluate(
-    ({ yPercent, deviceIndex }) => {
+    ({ yPercent, deviceIndex, rackIndex }) => {
       const deviceItems = document.querySelectorAll(".device-palette-item");
       const deviceItem = deviceItems[deviceIndex];
-      const rack = document.querySelector(".rack-svg");
+      // Use front-view SVGs so rackIndex maps directly to rack number
+      const rackSvgs = document.querySelectorAll(".rack-front .rack-svg");
+      const rack = rackSvgs[rackIndex] ?? document.querySelector(".rack-svg");
 
       if (!deviceItem || !rack) {
         throw new Error("Could not find device item or rack");
@@ -76,7 +79,7 @@ export async function dragDeviceToRack(
         }),
       );
     },
-    { yPercent, deviceIndex },
+    { yPercent, deviceIndex, rackIndex },
   );
 
   // Wait for device count to increase

@@ -304,8 +304,11 @@ test.describe("Device Metadata Persistence", () => {
       await clickNewRack(page);
       await completeWizardWithClicks(page, { name: "Second Rack", height: 24 });
 
-      // Add a device to the second rack
-      await dragDeviceToRack(page);
+      // Switch back to Devices tab (clickNewRack switches to Racks tab)
+      await page.getByTestId("sidebar-tab-devices").click();
+
+      // Add a device to the second rack (rackIndex 1)
+      await dragDeviceToRack(page, { rackIndex: 1 });
       await expect(page.locator(locators.rack.device).first()).toBeVisible();
 
       await selectDevice(page, 0);

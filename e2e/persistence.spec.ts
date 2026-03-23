@@ -90,7 +90,7 @@ test.describe("Persistence", () => {
     await loadFileFromDisk(page, savedPath);
 
     // Wait for success toast to confirm load completed
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    await expect(page.locator(locators.toast.success).first()).toBeVisible({
       timeout: 10000,
     });
 

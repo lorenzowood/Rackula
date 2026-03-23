@@ -84,8 +84,7 @@ test.describe("Archive Format", () => {
     expect(files.some((f) => f.endsWith(".yaml"))).toBe(true);
   });
 
-  // Flaky: loadFileFromDisk timing varies — file-input-load element lifecycle
-  test.fixme("load saved ZIP restores layout", async ({ page }) => {
+  test("load saved ZIP restores layout", async ({ page }) => {
     await dragDeviceToRack(page);
     await expect(page.locator(locators.rack.device).first()).toBeVisible({
       timeout: 5000,
@@ -105,8 +104,8 @@ test.describe("Archive Format", () => {
     // Load the saved file
     await loadFileFromDisk(page, savedPath);
 
-    // Wait for success toast to confirm load completed
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    // Wait for load success toast (use .last() — share link toast may still be visible)
+    await expect(page.locator(locators.toast.success).last()).toBeVisible({
       timeout: 10000,
     });
 

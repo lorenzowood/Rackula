@@ -42,8 +42,7 @@ test.describe("Device Custom Names", () => {
     );
   });
 
-  // Flaky: loadFileFromDisk timing varies — file-input-load element lifecycle
-  test.fixme("display name persists after save/load", async ({ page }) => {
+  test("display name persists after save/load", async ({ page }) => {
     // Place a device and give it a custom name
     await dragDeviceToRack(page);
     await expect(page.locator(locators.rack.device).first()).toBeVisible();
@@ -80,7 +79,7 @@ test.describe("Device Custom Names", () => {
     await loadFileFromDisk(page, savedPath);
 
     // Wait for success toast to confirm load completed
-    await expect(page.locator(locators.toast.success)).toBeVisible({
+    await expect(page.locator(locators.toast.success).first()).toBeVisible({
       timeout: 10000,
     });
 

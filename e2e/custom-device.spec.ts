@@ -1,5 +1,5 @@
 import { test, expect } from "./helpers/base-test";
-import { gotoWithRack, dragDeviceToRack, locators } from "./helpers";
+import { gotoWithRack, locators } from "./helpers";
 
 /**
  * E2E Tests for Custom Device Creation and Placement (Issue #166)
@@ -11,77 +11,51 @@ test.describe("Custom Device Height (Issue #166)", () => {
     await gotoWithRack(page);
   });
 
-  // TODO: Playwright fill() on number input doesn't trigger Svelte bind:value — needs dispatchEvent workaround
+  // Two blockers prevent these tests from running:
+  // 1. Svelte bind:value on <input type="number"> doesn't react to Playwright fill(),
+  //    type(), or nativeInputValueSetter — the custom device is created with default 1U height
+  // 2. Custom devices are inserted into a brand-sorted palette, not appended at the end,
+  //    so deviceIndex: count-1 drags the wrong device
+  // Needs: a dedicated dragDeviceByName() helper + Svelte number input workaround
   test.skip("custom 4U device renders with correct height after placement", async ({
     page,
   }) => {
-    // 1. Open Add Device form
     const addDeviceButton = page.locator('[data-testid="btn-create-custom-device"]');
     await addDeviceButton.click();
 
-    // 2. Fill in custom device details — click height input first to ensure focus
     await page.fill("#device-name", "RACKOWL 4U Server");
     const heightInput = page.locator("#device-height");
     await heightInput.click();
     await heightInput.fill("4");
     await page.selectOption("#device-category", "server");
 
-    // 3. Submit the form
     await page.click('[data-testid="btn-add-device"]');
 
-    // 4. Verify custom device appears in palette
     const customDevice = page.locator(
       '.device-palette-item:has-text("RACKOWL 4U Server")',
     );
     await expect(customDevice).toBeVisible();
 
-    // 5. Drag device to rack using shared helper (new device is last in list)
     const deviceCount = await page.locator(locators.device.paletteItem).count();
-    await dragDeviceToRack(page, { deviceIndex: deviceCount - 1 });
+    await expect(deviceCount).toBeGreaterThan(0);
 
-    // 6. Verify device appears in rack
-    const rackDevice = page.locator(locators.rack.device).first();
-    await expect(rackDevice).toBeVisible({ timeout: 5000 });
-
-    // 7. CRITICAL: Verify device has correct height (4U = 4 * 22px = 88px)
-    const deviceRect = page.locator(locators.rack.deviceRect).first();
-    const height = await deviceRect.getAttribute("height");
-
-    // Verify multi-U device has proportionally larger height than 1U
-    const heightVal = parseFloat(height || "0");
-    // A 4U device should be roughly 4x the U_HEIGHT (22px each = 88px)
-    // Use a range check since rendering may vary slightly
-    expect(heightVal).toBeGreaterThan(60);
+    // TODO: drag custom device by name, verify 4U height (>60px)
   });
 
-  // TODO: Same fill() issue as above
   test.skip("custom 2U device blocks correct number of rack positions", async ({
     page,
   }) => {
-    // 1. Open Add Device form
     const addDeviceButton = page.locator('[data-testid="btn-create-custom-device"]');
     await addDeviceButton.click();
 
-    // 2. Create a custom 2U device — clear then type to ensure Svelte binding updates
     await page.fill("#device-name", "Test 2U Storage");
     const heightInput = page.locator("#device-height");
     await heightInput.click();
     await heightInput.fill("2");
     await page.selectOption("#device-category", "storage");
 
-    // 3. Submit the form
     await page.click('[data-testid="btn-add-device"]');
 
-    // 4. Drag device to rack (new device is last in list)
-    const deviceCount = await page.locator(locators.device.paletteItem).count();
-    await dragDeviceToRack(page, { deviceIndex: deviceCount - 1 });
-
-    // 5. Verify device renders with 2U height
-    const deviceRect = page.locator(locators.rack.deviceRect).first();
-    const height = await deviceRect.getAttribute("height");
-
-    // A 2U device should be roughly 2x the U_HEIGHT (22px each = 44px)
-    const heightVal = parseFloat(height || "0");
-    expect(heightVal).toBeGreaterThan(30);
+    // TODO: drag custom device by name, verify 2U height (>30px)
   });
 });
