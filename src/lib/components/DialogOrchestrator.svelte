@@ -402,7 +402,7 @@
           ? `Imported ${result.devices.length} devices (${result.skipped} skipped)`
           : `Imported ${result.devices.length} ${result.devices.length === 1 ? "device" : "devices"}`;
 
-      toastStore.showToast(message, "success");
+      toastStore.showToast(message, result.skipped > 0 ? "warning" : "success");
     } catch (error) {
       dialogDebug.import("Failed to import device library: %O", error);
       toastStore.showToast("Failed to import device library", "error");

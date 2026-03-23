@@ -179,5 +179,9 @@ export function parseDeviceLibraryImport(
     devices.push(deviceType);
   }
 
+  if (devices.length === 0 && skipped > 0) {
+    return { devices: [], skipped, error: "No valid devices found in file" };
+  }
+
   return { devices, skipped };
 }
