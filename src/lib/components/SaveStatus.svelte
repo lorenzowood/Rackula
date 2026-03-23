@@ -156,7 +156,10 @@
     margin-left: var(--space-1);
   }
 
-  .retry-link:hover,
+  .retry-link:hover {
+    color: var(--colour-text);
+  }
+
   .retry-link:focus-visible {
     color: var(--colour-text);
     outline: 2px solid var(--colour-primary);
