@@ -300,9 +300,8 @@ test.describe("Device Metadata Persistence", () => {
       await setDeviceName(page, TEST_METADATA.name);
       await deselectDevice(page);
 
-      // Create a second rack via replace flow (single-rack mode)
+      // Create a second rack (multi-rack mode — wizard opens directly)
       await clickNewRack(page);
-      await page.click('[data-testid="btn-replace-rack"]');
       await completeWizardWithClicks(page, { name: "Second Rack", height: 24 });
 
       // Add a device to the second rack

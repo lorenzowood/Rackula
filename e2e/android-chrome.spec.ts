@@ -30,18 +30,19 @@ const androidDevices = [
 const phoneDevices = androidDevices.filter((d) => d.mobile && d.width < 600);
 
 /**
- * Setup helper for mobile viewport tests - uses share link instead of v0.2 flow
+ * Setup helper for mobile viewport tests - uses share link instead of v0.2 flow.
+ * Sets sessionStorage via addInitScript BEFORE navigation so the mobile warning
+ * modal is already dismissed when page scripts run.
  */
 async function setupMobileViewport(
   page: Page,
   device: (typeof androidDevices)[number],
 ) {
   await page.setViewportSize({ width: device.width, height: device.height });
-  await page.goto(`/?l=${EMPTY_RACK_SHARE}`);
-  // Dismiss mobile warning modal for tests
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
     sessionStorage.setItem("rackula-mobile-warning-dismissed", "true");
   });
+  await page.goto(`/?l=${EMPTY_RACK_SHARE}`);
   await page.locator(locators.rack.container).first().waitFor({ state: "visible" });
 }
 

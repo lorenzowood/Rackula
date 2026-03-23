@@ -31,11 +31,10 @@ async function setupMobileViewport(
   device: (typeof iosDevices)[number],
 ) {
   await page.setViewportSize({ width: device.width, height: device.height });
-  await page.goto(`/?l=${EMPTY_RACK_SHARE}`);
-  // Dismiss mobile warning modal for tests
-  await page.evaluate(() => {
+  await page.addInitScript(() => {
     sessionStorage.setItem("rackula-mobile-warning-dismissed", "true");
   });
+  await page.goto(`/?l=${EMPTY_RACK_SHARE}`);
   await page.locator(locators.rack.container).first().waitFor({ state: "visible" });
 }
 

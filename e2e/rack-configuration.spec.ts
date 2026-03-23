@@ -3,13 +3,16 @@ import type { Page } from "@playwright/test";
 import { gotoWithRack, clickNewRack, locators } from "./helpers";
 
 /**
- * Helper to open the New Rack form via the replace flow.
- * With a rack already loaded via share link, clicking New Rack shows replace dialog.
+ * Helper to open the New Rack wizard and advance past step 1 (name/type).
+ * In multi-rack mode, clicking New Rack opens the wizard directly.
+ * Fills name in step 1, clicks Next to reach step 2 (width + height).
  */
-async function openNewRackForm(page: Page) {
+async function openWizardStep2(page: Page, name: string) {
   await clickNewRack(page);
-  await page.click('[data-testid="btn-replace-rack"]');
-  await expect(page.locator(locators.dialog.root)).toBeVisible();
+  await expect(page.locator('[role="dialog"]')).toBeVisible();
+  await page.fill("#rack-name", name);
+  // Advance from step 1 (Name/Type) to step 2 (Width/Height)
+  await page.click('[data-testid="btn-wizard-next"]');
 }
 
 test.describe("Rack Configuration", () => {
@@ -18,15 +21,13 @@ test.describe("Rack Configuration", () => {
   });
 
   test("can create 10-inch rack with narrower render", async ({ page }) => {
-    await openNewRackForm(page);
+    await openWizardStep2(page, "Narrow Rack");
 
-    // Fill in rack details
-    await page.fill("#rack-name", "Narrow Rack");
+    // Step 2: Select 10" width using radio button, then height
+    await page.click('[data-testid="radio-width-10"]');
     await page.click('[data-testid="btn-height-24"]');
 
-    // Select 10" width using radio button
-    await page.click('[data-testid="radio-width-10"]');
-
+    // Create rack
     await page.click('[data-testid="btn-wizard-next"]');
 
     // Rack should be visible (dual-view has 2 containers)
@@ -46,12 +47,12 @@ test.describe("Rack Configuration", () => {
   });
 
   test("can create 19-inch rack with standard render", async ({ page }) => {
-    await openNewRackForm(page);
+    await openWizardStep2(page, "Standard Rack");
 
-    await page.fill("#rack-name", "Standard Rack");
+    // Step 2: 19" is default, just select height
     await page.click('[data-testid="btn-height-42"]');
-    // 19" is default, no need to change
 
+    // Create rack
     await page.click('[data-testid="btn-wizard-next"]');
 
     // Rack should be visible (dual-view has 2 containers)
@@ -75,13 +76,13 @@ test.describe("Rack Configuration", () => {
   test("rack with ascending units shows U1 at bottom (default desc_units=false, starting_unit=1)", async ({
     page,
   }) => {
-    await openNewRackForm(page);
+    await openWizardStep2(page, "Ascending Rack");
 
-    await page.fill("#rack-name", "Ascending Rack");
+    // Step 2: Use custom height of 10U
     await page.click('[data-testid="btn-height-custom"]');
     await page.fill("#custom-height", "10");
 
-    // Uses defaults: desc_units=false (ascending), starting_unit=1
+    // Create rack
     await page.click('[data-testid="btn-wizard-next"]');
 
     // Rack should be visible (dual-view has 2 containers)

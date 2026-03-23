@@ -76,8 +76,10 @@ test.describe("Keyboard Shortcuts", () => {
     await page.keyboard.type("?");
 
     // Help dialog should open (HelpPanel uses Dialog component)
+    // The Dialog.Title is sr-only with text "About Rackula" — check dialog is visible
     await expect(page.locator(locators.dialog.root)).toBeVisible({ timeout: 2000 });
-    await expect(page.locator(locators.dialog.title)).toHaveText("Help");
+    // Verify it's the help dialog by checking for the logo or keyboard shortcuts content
+    await expect(page.locator(".help-dialog")).toBeVisible();
   });
 
   test("Ctrl+S triggers save", async ({ page }) => {
@@ -93,15 +95,15 @@ test.describe("Keyboard Shortcuts", () => {
   });
 
   test("Escape closes dialogs", async ({ page }) => {
-    // Open new rack dialog (this shows replace dialog)
+    // Open new rack wizard dialog
     await clickNewRack(page);
-    await expect(page.locator(locators.dialog.root)).toBeVisible();
+    await expect(page.locator('[role="dialog"]')).toBeVisible();
 
     // Press Escape
     await page.keyboard.press("Escape");
 
     // Dialog should close
-    await expect(page.locator(locators.dialog.root)).not.toBeVisible();
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
   });
 
   test("Arrow keys move device in rack", async ({ page }) => {
