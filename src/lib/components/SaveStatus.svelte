@@ -96,13 +96,15 @@
       <IconBug size={14} />
       <span class="status-text error">Save failed</span>
       {#if onretry}
-        <button class="retry-link" onclick={onretry}>Retry</button>
+        <button type="button" class="retry-link" onclick={onretry}>Retry</button
+        >
       {/if}
     {:else if status === "offline"}
       <IconCloudOff size={14} />
       <span class="status-text warning">Offline</span>
       {#if onretry}
-        <button class="retry-link" onclick={onretry}>Retry</button>
+        <button type="button" class="retry-link" onclick={onretry}>Retry</button
+        >
       {/if}
     {/if}
   </div>
