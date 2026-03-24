@@ -26,8 +26,9 @@ export interface RackCommandStore {
  */
 export interface RackLifecycleCommandStore {
   addRackRaw(rack: Rack): void;
-  deleteRackRaw(id: string): { rack: Rack; groups: RackGroup[] } | undefined;
-  restoreRackRaw(rack: Rack, groups: RackGroup[]): void;
+  deleteRackRaw(id: string): { rack: Rack; index: number; groups: RackGroup[] } | undefined;
+  restoreRackRaw(rack: Rack, groups: RackGroup[], originalIndex?: number): void;
+  setActiveRackId(id: string | null): void;
 }
 
 /**
@@ -36,6 +37,8 @@ export interface RackLifecycleCommandStore {
 export function createAddRackCommand(
   rack: Rack,
   store: RackLifecycleCommandStore,
+  /** When true, execute() will also set this rack as active (for redo) */
+  setActive = false,
 ): Command {
   // Deep copy to avoid mutation issues
   const rackCopy = JSON.parse(JSON.stringify(rack)) as Rack;
@@ -46,6 +49,9 @@ export function createAddRackCommand(
     timestamp: Date.now(),
     execute() {
       store.addRackRaw(rackCopy);
+      if (setActive) {
+        store.setActiveRackId(rackCopy.id);
+      }
     },
     undo() {
       store.deleteRackRaw(rackCopy.id);
@@ -55,7 +61,7 @@ export function createAddRackCommand(
 
 /**
  * Create a command to delete a rack
- * Captures the rack state and any group memberships for restoration on undo
+ * Captures the rack state, original position, and group memberships for restoration on undo
  */
 export function createDeleteRackCommand(
   rack: Rack,
@@ -67,16 +73,21 @@ export function createDeleteRackCommand(
   const groupSnapshots = JSON.parse(
     JSON.stringify(affectedGroups),
   ) as RackGroup[];
+  // Capture original index on first execute so undo restores to the correct position
+  let originalIndex: number | undefined;
 
   return {
     type: "DELETE_RACK",
     description: `Delete rack "${rack.name}"`,
     timestamp: Date.now(),
     execute() {
-      store.deleteRackRaw(rackSnapshot.id);
+      const result = store.deleteRackRaw(rackSnapshot.id);
+      if (result && originalIndex === undefined) {
+        originalIndex = result.index;
+      }
     },
     undo() {
-      store.restoreRackRaw(rackSnapshot, groupSnapshots);
+      store.restoreRackRaw(rackSnapshot, groupSnapshots, originalIndex);
     },
   };
 }

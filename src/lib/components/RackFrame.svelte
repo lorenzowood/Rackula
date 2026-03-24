@@ -39,6 +39,8 @@
     nameYOffset: number;
     /** Whether Shift key is held (shows half-U grid lines) */
     shiftKeyHeld?: boolean;
+    /** Unique rack identifier for SVG pattern IDs */
+    rackId: string;
     /** Blocked slot ranges for crosshatch overlay */
     blockedSlots?: URange[];
     /** Drop preview data for highlighting drop target U slots */
@@ -67,12 +69,18 @@
     rackName,
     viewLabel,
     nameYOffset,
+    rackId,
     shiftKeyHeld = false,
     blockedSlots = [],
     dropPreview = null,
     isPlacementMode = false,
     validPlacementSlots,
   }: Props = $props();
+
+  // Sanitise rackId + viewLabel into a safe SVG fragment identifier
+  const patternId = $derived(
+    `blocked-crosshatch-${rackId.replace(/[^a-zA-Z0-9_-]/g, "_")}${viewLabel ? `-${viewLabel.toLowerCase()}` : ""}`,
+  );
 </script>
 
 <!-- Rack background (interior)
@@ -253,7 +261,7 @@
   <!-- Crosshatch pattern for blocked slots - uses two overlapping diagonal line sets
        for better visibility and accessibility (not relying solely on color) -->
   <pattern
-    id="blocked-crosshatch-pattern"
+    id={patternId}
     patternUnits="userSpaceOnUse"
     width="8"
     height="8"
@@ -314,7 +322,7 @@
         y={slotY(slot)}
         width={slotW}
         height={slotHeight(slot)}
-        fill="url(#blocked-crosshatch-pattern)"
+        fill="url(#{patternId})"
       />
     {/each}
   </g>

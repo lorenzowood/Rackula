@@ -4,6 +4,8 @@
 
 import type { Command } from './types';
 import type { DeviceType, PlacedDevice } from '$lib/types';
+import { getImageStore } from '../images.svelte';
+import type { DeviceImageData } from '$lib/types/images';
 
 /**
  * Interface for layout store operations needed by device type commands
@@ -15,6 +17,9 @@ export interface DeviceTypeCommandStore {
 	placeDeviceRaw(device: PlacedDevice): number;
 	removeDeviceAtIndexRaw(index: number): void;
 	getPlacedDevicesForType(slug: string): PlacedDevice[];
+	getDeviceAtIndex(index: number): PlacedDevice | undefined;
+	setActiveRackId(id: string | null): void;
+	getActiveRackId(): string | null;
 }
 
 /**
@@ -61,30 +66,72 @@ export function createUpdateDeviceTypeCommand(
 
 /**
  * Create a command to delete a device type (including placed instances)
+ * Accepts rack-aware device data so undo restores devices to their original racks.
  */
 export function createDeleteDeviceTypeCommand(
 	deviceType: DeviceType,
-	placedDevices: PlacedDevice[],
+	placedDevices: { rackId: string; device: PlacedDevice }[],
 	store: DeviceTypeCommandStore
 ): Command {
-	// Store device indices for restoration (in reverse order for proper undo)
-	const deviceData = placedDevices.map((d) => ({ ...d }));
+	const deviceData = placedDevices.map((d) => ({
+		rackId: d.rackId,
+		device: JSON.parse(JSON.stringify(d.device)) as PlacedDevice,
+	}));
+	const deviceTypeCopy = JSON.parse(JSON.stringify(deviceType)) as DeviceType;
+
+	// Snapshot all images associated with this device type
+	const imageStore = getImageStore();
+	const typeImageSnapshot = imageStore.getAllImages().get(deviceType.slug);
+	const typeImageCopy = typeImageSnapshot ? structuredClone(typeImageSnapshot) : undefined;
+
+	// Snapshot placement-specific images for each placed device
+	const placementSnapshots = new Map<string, DeviceImageData>();
+	for (const d of placedDevices) {
+		const key = `placement-${d.device.id}`;
+		const snap = imageStore.getAllImages().get(key);
+		if (snap) placementSnapshots.set(key, structuredClone(snap));
+	}
 
 	return {
 		type: 'DELETE_DEVICE_TYPE',
 		description: `Delete ${deviceType.model ?? deviceType.slug}`,
 		timestamp: Date.now(),
 		execute() {
-			// Remove device type (this should also remove placed instances via store logic)
-			store.removeDeviceTypeRaw(deviceType.slug);
+			// Clean up images (moved from raw mutator)
+			const imgStore = getImageStore();
+			imgStore.removeAllDeviceImages(deviceTypeCopy.slug);
+			// Remove placement images — check both original and potentially remapped keys
+			for (const { device } of deviceData) {
+				imgStore.removeAllDeviceImages(`placement-${device.id}`);
+			}
+			store.removeDeviceTypeRaw(deviceTypeCopy.slug);
 		},
 		undo() {
-			// First restore the device type
-			store.addDeviceTypeRaw(deviceType);
-			// Then restore all placed instances
-			deviceData.forEach((device) => {
-				store.placeDeviceRaw(device);
-			});
+			store.addDeviceTypeRaw(deviceTypeCopy);
+			// Restore devices to their original racks
+			const previousActiveRack = store.getActiveRackId();
+			const imgStore = getImageStore();
+			for (const { rackId, device } of deviceData) {
+				store.setActiveRackId(rackId);
+				const placedIdx = store.placeDeviceRaw(device);
+				// Read back actual device — placeDeviceRaw may remap the ID (#1363 dedup guard)
+				const placed = store.getDeviceAtIndex(placedIdx);
+				const actualId = placed?.id ?? device.id;
+				// Restore placement images under the (possibly remapped) key
+				const originalKey = `placement-${device.id}`;
+				const snap = placementSnapshots.get(originalKey);
+				if (snap) {
+					const actualKey = `placement-${actualId}`;
+					if (snap.front) imgStore.setDeviceImage(actualKey, 'front', snap.front);
+					if (snap.rear) imgStore.setDeviceImage(actualKey, 'rear', snap.rear);
+				}
+			}
+			store.setActiveRackId(previousActiveRack);
+			// Restore type-level images
+			if (typeImageCopy) {
+				if (typeImageCopy.front) imgStore.setDeviceImage(deviceTypeCopy.slug, 'front', typeImageCopy.front);
+				if (typeImageCopy.rear) imgStore.setDeviceImage(deviceTypeCopy.slug, 'rear', typeImageCopy.rear);
+			}
 		}
 	};
 }
