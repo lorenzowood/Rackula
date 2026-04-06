@@ -852,12 +852,77 @@ function migrateDevicePositions<
 }
 
 /**
+ * Recover slot_position for pairs of devices at the same position and face
+ * that are both missing slot_position.
+ *
+ * This can happen when layouts were saved by the broken serializer introduced
+ * in dd25f4c (YAML editor panel feature) which accidentally stripped both
+ * slot_position and slot_width from the output. Without recovery the two
+ * devices are indistinguishable after load and Svelte throws
+ * each_key_duplicate (#1248).
+ *
+ * A valid layout cannot have two full-width devices at the same position, so
+ * exactly-2 co-located devices with no slot_position unambiguously indicates
+ * a half-width pair that lost its placement data. We do not require slot_width
+ * to be present on the device type because that field may also be missing from
+ * the same broken save.
+ *
+ * Recovery is best-effort: the original left/right order is lost, so we
+ * assign left to the first device in the array and right to the second.
+ * Returns the recovered devices and the set of device_type slugs that were
+ * recovered, so the caller can also restore slot_width on those device types.
+ */
+function recoverSlotPositions<
+  T extends {
+    id: string;
+    device_type: string;
+    position: number;
+    face: string;
+    slot_position?: string;
+  },
+>(devices: T[]): { devices: T[]; recoveredSlugs: Set<string> } {
+  // Group devices by position+face to find co-located pairs
+  const groups = new Map<string, T[]>();
+  for (const d of devices) {
+    const key = `${d.position}:${d.face}`;
+    const group = groups.get(key) ?? [];
+    group.push(d);
+    groups.set(key, group);
+  }
+
+  // Collect IDs that need slot_position assigned, mapping to "left" or "right"
+  const recovery = new Map<string, "left" | "right">();
+  const recoveredSlugs = new Set<string>();
+  for (const group of groups.values()) {
+    if (
+      group.length === 2 &&
+      group.every((d) => d.slot_position === undefined)
+    ) {
+      recovery.set(group[0].id, "left");
+      recovery.set(group[1].id, "right");
+      for (const d of group) recoveredSlugs.add(d.device_type);
+    }
+  }
+
+  if (recovery.size === 0) return { devices, recoveredSlugs };
+
+  return {
+    devices: devices.map((d) => {
+      const assigned = recovery.get(d.id);
+      return assigned ? { ...d, slot_position: assigned } : d;
+    }),
+    recoveredSlugs,
+  };
+}
+
+/**
  * Complete layout schema (base, with migration transform)
  * Uses racks array for multi-rack support
  * Transform handles:
  * - Legacy rack → racks[0] migration
  * - Generating nanoid for racks missing id field
  * - Position migration from U values to internal units (v0.7.0)
+ * - slot_position recovery for half-width device pairs missing the field (#1248)
  */
 const LayoutSchemaBase = LayoutSchemaInput.transform((data) => {
   // Determine the racks array
@@ -881,6 +946,8 @@ const LayoutSchemaBase = LayoutSchemaInput.transform((data) => {
   const migratePositions = needsPositionMigration(data.version, allDevices);
 
   // Generate IDs for racks missing them, deduplicate device IDs, and migrate positions if needed
+  // Also collect device type slugs that need slot_width recovery (#1248)
+  const allRecoveredSlugs = new Set<string>();
   const racksWithIds = racks.map((rack) => {
     // Deduplicate device IDs to prevent Svelte each_key_duplicate errors (#1363)
     const seenDeviceIds = new Set<string>();
@@ -904,14 +971,30 @@ const LayoutSchemaBase = LayoutSchemaInput.transform((data) => {
         : { ...d, id: nextId, container_id: nextContainerId };
     });
 
+    // Recover slot_position for half-width device pairs missing it (#1248)
+    const { devices: recoveredDevices, recoveredSlugs } =
+      recoverSlotPositions(deduplicatedDevices);
+    for (const slug of recoveredSlugs) allRecoveredSlugs.add(slug);
+
     return {
       ...rack,
       id: rack.id ?? nanoid(),
       devices: migratePositions
-        ? migrateDevicePositions(deduplicatedDevices)
-        : deduplicatedDevices,
+        ? migrateDevicePositions(recoveredDevices)
+        : recoveredDevices,
     };
   });
+
+  // Recover slot_width: 1 on device types whose slot_width was also stripped
+  // by the same broken serializer (#1248)
+  const fixedDeviceTypes =
+    allRecoveredSlugs.size === 0
+      ? data.device_types
+      : data.device_types.map((dt) =>
+          allRecoveredSlugs.has(dt.slug) && dt.slot_width === undefined
+            ? { ...dt, slot_width: 1 }
+            : dt,
+        );
 
   // Build the output without the legacy 'rack' field
   const { rack: _legacyRack, racks: _inputRacks, ...rest } = data;
@@ -923,6 +1006,7 @@ const LayoutSchemaBase = LayoutSchemaInput.transform((data) => {
     // After migration, stamp with current app version
     version: migratePositions ? VERSION : data.version,
     racks: racksWithIds,
+    device_types: fixedDeviceTypes,
   };
 });
 
