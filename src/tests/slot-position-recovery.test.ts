@@ -48,6 +48,7 @@ settings:
     const layout = await parseLayoutYaml(brokenYaml);
     const devices = layout.racks[0]?.devices ?? [];
 
+    // eslint-disable-next-line no-restricted-syntax -- Behavioral invariant: recovery must preserve device count (2 in -> 2 out)
     expect(devices).toHaveLength(2);
 
     const slots = devices.map((d) => d.slot_position);

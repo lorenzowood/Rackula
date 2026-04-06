@@ -7,6 +7,7 @@ import { z } from "../zod";
 import { nanoid } from "nanoid";
 import { UNITS_PER_U } from "$lib/types/constants";
 import { VERSION } from "$lib/version";
+import { layoutDebug } from "$lib/utils/debug";
 
 /**
  * Slug pattern: lowercase alphanumeric with hyphens, no leading/trailing/consecutive hyphens
@@ -905,6 +906,13 @@ function recoverSlotPositions<
   }
 
   if (recovery.size === 0) return { devices, recoveredSlugs };
+
+  const affectedGroups = recovery.size / 2;
+  layoutDebug.schema(
+    "Recovered slot_position for %d device(s) in %d half-width pair(s) — layout was saved without slot_position (dd25f4c regression)",
+    recovery.size,
+    affectedGroups,
+  );
 
   return {
     devices: devices.map((d) => {
