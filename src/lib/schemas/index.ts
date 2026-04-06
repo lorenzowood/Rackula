@@ -879,12 +879,17 @@ function recoverSlotPositions<
     device_type: string;
     position: number;
     face: string;
+    container_id?: string;
     slot_position?: string;
   },
 >(devices: T[]): { devices: T[]; recoveredSlugs: Set<string> } {
-  // Group devices by position+face to find co-located pairs
+  // Group rack-level devices by position+face to find co-located pairs.
+  // Container children are excluded: they share relative position/face values
+  // and are disambiguated by slot_id, not slot_position, so they must never
+  // be treated as half-width rack pairs.
   const groups = new Map<string, T[]>();
   for (const d of devices) {
+    if (d.container_id !== undefined) continue;
     const key = `${d.position}:${d.face}`;
     const group = groups.get(key) ?? [];
     group.push(d);
