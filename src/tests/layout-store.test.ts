@@ -9,6 +9,7 @@ import {
   createTestDevice,
   createTestDeviceType,
 } from "./factories";
+import { MAX_RACKS } from "$lib/types/constants";
 
 describe("Layout Store", () => {
   beforeEach(() => {
@@ -172,16 +173,46 @@ describe("Layout Store", () => {
             starting_unit: 1,
             position: 0,
             devices: [
-              { id: "same-id", device_type: "server-a", position: 100, face: "front" as const },
-              { id: "same-id", device_type: "server-b", position: 200, face: "front" as const },
-              { id: "ok-id", device_type: "server-c", position: 300, face: "front" as const },
+              {
+                id: "same-id",
+                device_type: "server-a",
+                position: 100,
+                face: "front" as const,
+              },
+              {
+                id: "same-id",
+                device_type: "server-b",
+                position: 200,
+                face: "front" as const,
+              },
+              {
+                id: "ok-id",
+                device_type: "server-c",
+                position: 300,
+                face: "front" as const,
+              },
             ],
           },
         ],
         device_types: [
-          { slug: "server-a", u_height: 1, colour: "#4A90A4", category: "server" as const },
-          { slug: "server-b", u_height: 1, colour: "#4A90A4", category: "server" as const },
-          { slug: "server-c", u_height: 1, colour: "#4A90A4", category: "server" as const },
+          {
+            slug: "server-a",
+            u_height: 1,
+            colour: "#4A90A4",
+            category: "server" as const,
+          },
+          {
+            slug: "server-b",
+            u_height: 1,
+            colour: "#4A90A4",
+            category: "server" as const,
+          },
+          {
+            slug: "server-c",
+            u_height: 1,
+            colour: "#4A90A4",
+            category: "server" as const,
+          },
         ],
         settings: {
           display_mode: "label",
@@ -215,14 +246,34 @@ describe("Layout Store", () => {
             starting_unit: 1,
             position: 0,
             devices: [
-              { id: "", device_type: "server-a", position: 100, face: "front" as const },
-              { id: "valid-id", device_type: "server-b", position: 200, face: "front" as const },
+              {
+                id: "",
+                device_type: "server-a",
+                position: 100,
+                face: "front" as const,
+              },
+              {
+                id: "valid-id",
+                device_type: "server-b",
+                position: 200,
+                face: "front" as const,
+              },
             ],
           },
         ],
         device_types: [
-          { slug: "server-a", u_height: 1, colour: "#4A90A4", category: "server" as const },
-          { slug: "server-b", u_height: 1, colour: "#4A90A4", category: "server" as const },
+          {
+            slug: "server-a",
+            u_height: 1,
+            colour: "#4A90A4",
+            category: "server" as const,
+          },
+          {
+            slug: "server-b",
+            u_height: 1,
+            colour: "#4A90A4",
+            category: "server" as const,
+          },
         ],
         settings: {
           display_mode: "label",
@@ -350,8 +401,8 @@ describe("Layout Store", () => {
 
     it("returns null when capacity exceeded for 2 bays", () => {
       const store = getLayoutStore();
-      // Add 9 racks (we start with 1 default rack, so total will be 10)
-      for (let i = 0; i < 9; i++) {
+      // Fill to MAX_RACKS (we start with 1 default rack)
+      for (let i = 0; i < MAX_RACKS - 1; i++) {
         store.addRack(`Rack ${i}`, 42);
       }
       // Now at MAX_RACKS, can't add 2 more
@@ -361,11 +412,11 @@ describe("Layout Store", () => {
 
     it("returns null when capacity exceeded for 3 bays", () => {
       const store = getLayoutStore();
-      // Add 8 racks (we start with 1 default rack, so total will be 9)
-      for (let i = 0; i < 8; i++) {
+      // Fill to MAX_RACKS - 1 (we start with 1 default rack)
+      for (let i = 0; i < MAX_RACKS - 2; i++) {
         store.addRack(`Rack ${i}`, 42);
       }
-      // Now at 9 racks, can't add 3 more
+      // Now at MAX_RACKS - 1 racks, can't add 3 more
       const result = store.addBayedRackGroup("Server Bay", 3, 12);
       expect(result).toBeNull();
     });
@@ -2134,7 +2185,11 @@ describe("Layout Store", () => {
       const typeCountBefore = store.device_types.length;
 
       // Place a different brand device at the same position (collision)
-      const result = store.placeDevice(rack!.id, "ubiquiti-unifi-dream-machine-pro", 5);
+      const result = store.placeDevice(
+        rack!.id,
+        "ubiquiti-unifi-dream-machine-pro",
+        5,
+      );
 
       // Placement failed — nothing should have been imported or dirtied
       expect(result).toBe(false);
