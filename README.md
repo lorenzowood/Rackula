@@ -1,3 +1,13 @@
+<p><b>This is my personal fork of Rackula, which addresses some things that were an issue for me:
+<ul>
+  <li>There was a maximum of 10 racks per layout; I increased mine to 20.</li>
+  <li>There was once a bug which corrupted some layouts with half-width devices; I fixed it, which is in the main repo, and also added an automatic fix-up of corrupted files on load, which the maintainers didn’t like.</li>
+  <li>The persistence API was written in Node.js on Bun; I moved my set-up to a VM running on an i7-3770, which lacks the AVX2 instructions required by Bun, so I re-wrote the API in Python.</li>
+</ul>
+  If you aren't interested in these changes, you’re better off sticking to the original repo at https://github.com/RackulaLives/Rackula.
+</b></p>
+<hr />
+
 <p align="center">
   <a href="https://count.racku.la">
     <picture>
