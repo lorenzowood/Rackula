@@ -132,6 +132,34 @@ RACKULA_API_WRITE_TOKEN=replace-with-generated-token \
 docker compose up -d
 ```
 
+### Python API (AVX2-incompatible hardware)
+
+The default API sidecar uses Bun, which requires AVX2 CPU instructions. If you're running on older hardware (e.g. Intel Ivy Bridge / Sandy Bridge era) that lacks AVX2, a drop-in Python replacement is available in [`api-python/`](api-python/).
+
+It implements the same routes, filesystem layout, and environment variables as the original — no data migration needed.
+
+**Build and deploy:**
+
+```bash
+cd api-python
+docker build --platform linux/amd64 -t rackula-api-python:latest .
+```
+
+In your `docker-compose.yml`, swap the API image:
+
+```yaml
+rackula-api:
+  image: rackula-api-python:latest # instead of ghcr.io/rackulalives/rackula-api:latest
+```
+
+Then restart the API container:
+
+```bash
+docker compose up -d --no-deps rackula-api
+```
+
+All other environment variables (`DATA_DIR`, `CORS_ORIGIN`, `RACKULA_API_WRITE_TOKEN`) work identically.
+
 ### Build from source
 
 ```bash
